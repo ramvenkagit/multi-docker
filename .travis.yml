@@ -1,0 +1,23 @@
+sudo: required
+services:
+  - docker
+before_install:
+  - docker build -t ramvenkagit/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run ramvenkagit/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t ramvenkagit/multi-client ./client
+  - docker build -t ramvenkagit/multi-worker ./worker
+  - docker build -t ramvenkagit/multi-server ./server
+  - docker build -t ramvenkagit/multi-nginx ./nginx
+  #Login in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password_stdin
+  #Take those images and push them to docker hub
+
+  - docker push ramvenkagit/multi-client
+  - docker push ramvenkagit/multi-worker
+  - docker push ramvenkagit/multi-server
+  - docker push ramvenkagit/multi-nginx
+
